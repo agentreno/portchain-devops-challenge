@@ -1,0 +1,72 @@
+<!doctype html>
+<head>
+</head>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="en">
+  <head>
+    <title>Portchain - Devops coding challenge</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="main.css" media="screen" />
+
+    
+  </head>
+  <body>
+
+    <div class="input">
+      <h3>CPU Usage</h3>
+      <label for="cpuUsageInput" id="cpuUsageLabel">0%</label>
+      <input type="range" id="cpuUsageInput" name="cpuUsageInput" min="0" max="100" value="0">
+    </div>
+
+    <div class="section">
+      <h3>Memory used</h3>
+      <div id="memory">
+
+      </div>
+    </div>
+    <div class="section">
+      <h3>CPU usage</h3>
+      <div id="cpu">
+
+      </div>
+    </div>
+    <div class="section">
+      <h3>Uptime</h3>
+      <div id="uptime">
+
+      </div>
+    </div>
+
+    <script type="text/javascript" src="socket.js"></script>
+    <script>
+      const uiElements = {
+        cpuUsageLabel: document.getElementById('cpuUsageLabel'),
+        cpuUsageInput: document.getElementById('cpuUsageInput'),
+        cpu: document.getElementById('cpu'),
+        memory: document.getElementById('memory'),
+        uptime: document.getElementById('uptime')
+      }
+
+      let socket;
+      connect((newSocket) => {
+        socket = newSocket
+      }, (data) => {
+        uiElements.cpuUsageInput.innerText = (data.cpuUsageInputRatio*100) + '%'
+        uiElements.cpu.innerText = (data.cpuRatio*100).toFixed(2) + '%';
+        uiElements.memory.innerText = (data.memory/1000000).toFixed(0) + 'MB';
+        uiElements.uptime.innerText = Math.floor(data.uptime) + 's';
+        displayTargetCpuPercent(Math.round(data.targetCpuRatio*100))
+      })
+
+      function displayTargetCpuPercent(targetCpuPercent) {
+        uiElements.cpuUsageLabel.innerText = targetCpuPercent + '%'
+        document.getElementById('cpuUsageInput').value = targetCpuPercent
+      }
+
+      uiElements.cpuUsageInput.addEventListener('change', () => {
+        displayTargetCpuPercent(document.getElementById('cpuUsageInput').value)
+        socket.send(JSON.stringify({targetCpuRatio: uiElements.cpuUsageInput.value/100}))
+      })
+    </script>
+  </body>
+</html>
