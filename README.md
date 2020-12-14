@@ -23,3 +23,10 @@ Key data points
 - The webserver serves 2 protocols on the same port: HTTP and WebSocket.
 - The port used by the webserver is `3000` by default but that can be changed with the `PORT` environment variable.
 - The application logs the number of clients that are connected and the data points displayed in the UI.
+
+
+Environment variables
+===
+
+- `PORT` the port number to which the  
+- `NODE_ENV` set it to `production` when deployed
