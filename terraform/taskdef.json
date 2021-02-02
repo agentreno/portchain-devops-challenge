@@ -1,0 +1,24 @@
+[
+    {
+        "name": "portchain",
+        "image": "karlhopkinsonturrell/portchain",
+        "cpu": 256,
+        "memory": 512,
+        "essential": true,
+        "portMappings": [
+            {
+                "containerPort": 3000,
+                "hostPort": 3000,
+                "protocol": "tcp"
+            }
+        ],
+        "logConfiguration": {
+            "logDriver": "awslogs",
+            "options": {
+                "awslogs-group": "/ecs/portchain",
+                "awslogs-region": "eu-west-1",
+                "awslogs-stream-prefix": "ecs"
+            }
+        }
+    }
+]
