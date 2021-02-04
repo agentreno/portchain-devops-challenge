@@ -28,7 +28,23 @@ load balancer but route 53 is chargeable.
 I would also normally allow AWS to manage the node pool for ECS with Fargate
 but that is also chargeable.
 
+I chose terraform because:
+
+- It's a mature tool with a large community and reasonably well-supported
+  (speaking of the AWS provider at least)
+- Many other engineers are familiar with it
+- I'm sceptical (currently) of the use of general-purpose languages like
+  typescript and python to manage infrastructure (for reasons I'd happily
+  discuss with you)
+- It was the fastest and most reliable route for me personally to complete this
+  task
+
 Next steps (if this was a real project):
+
+- Setup a shared remote state store for terraform and automate terraform apply
+  so it's not run outside of CI/CD
+
+- Use a private docker repository
 
 - Prevent direct access to the load balancer over HTTP using AWS-recommended
   headers, or just accept some charges and terminate TLS there instead of
@@ -39,6 +55,9 @@ Next steps (if this was a real project):
 - Possibly make a module out of it so it can be easily copied for extra
   environments, and turn more of the settings into variables in the process
   (e.g. node type, image path etc.)
+
+- Automate testing of this infrastructure and code with tools like terratest,
+  `terraform validate`, conftest, static security scanning etc.
 
 - Monitoring, alerting, deployment mechanism, local environment possibly with
   docker-compose... all of the good things.
