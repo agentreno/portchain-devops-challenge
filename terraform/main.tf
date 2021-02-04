@@ -26,9 +26,13 @@ resource "aws_iam_role" "portchain_execution_role" {
 
 data "aws_iam_policy_document" "portchain_logs_access" {
   statement {
-    actions = ["logs:*"]
-    # resources = [aws_cloudwatch_log_group.portchain_logs.arn]
-    resources = ["*"]
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+      "logs:DescribeLogStreams"
+    ]
+    resources = ["arn:aws:logs:*:*:*"]
   }
 }
 
