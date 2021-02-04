@@ -12,6 +12,12 @@
                 "protocol": "tcp"
             }
         ],
+        "environment": [
+            {
+                "name": "NODE_ENV",
+                "value": "production"
+            }
+        ],
         "logConfiguration": {
             "logDriver": "awslogs",
             "options": {
