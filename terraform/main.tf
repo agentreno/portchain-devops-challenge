@@ -180,6 +180,47 @@ resource "aws_lb_listener" "portchain_forward" {
   }
 }
 
+# TLS Ingress
+resource "aws_cloudfront_distribution" "edge" {
+  enabled = true
+
+  default_cache_behavior {
+    allowed_methods        = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods         = ["GET", "HEAD"]
+    viewer_protocol_policy = "redirect-to-https"
+    target_origin_id       = "portchain"
+
+    forwarded_values {
+      query_string = true
+      cookies {
+        forward = "all"
+      }
+    }
+  }
+
+  origin {
+    domain_name = aws_lb.ecs_lb.dns_name
+    origin_id   = "portchain"
+
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "http-only"
+      origin_ssl_protocols   = ["TLSv1"]
+    }
+  }
+
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+    }
+  }
+
+  viewer_certificate {
+    cloudfront_default_certificate = true
+  }
+}
+
 # Security groups
 resource "aws_security_group" "ecs_load_balancer" {
   name = "ecs_load_balancer"
@@ -228,6 +269,10 @@ resource "aws_security_group_rule" "container_ingress" {
 }
 
 # Outputs
+output "tls_endpoint" {
+  value = "https://${aws_cloudfront_distribution.edge.domain_name}"
+}
+
 output "load_balancer_dns" {
   value = aws_lb.ecs_lb.dns_name
 }
