@@ -4,6 +4,6 @@ variable "region" {
 }
 
 variable "profile" {
-  type = string
-  default = "default"
+  type    = string
+  default = "personal"
 }

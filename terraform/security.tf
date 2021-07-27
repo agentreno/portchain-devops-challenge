@@ -39,9 +39,9 @@ resource "aws_security_group" "ecs_load_balancer" {
   name = "ecs_load_balancer"
 
   ingress {
-    description = "world http access (secured with auth headers, with TLS upstream)"
-    from_port   = 80
-    to_port     = 80
+    description = "world https access"
+    from_port   = 443
+    to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }

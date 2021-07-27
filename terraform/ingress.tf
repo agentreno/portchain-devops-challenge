@@ -19,8 +19,9 @@ resource "aws_lb_target_group" "ecs_portchain_targets" {
 
 resource "aws_lb_listener" "portchain_forward" {
   load_balancer_arn = aws_lb.ecs_lb.arn
-  port              = "80"
-  protocol          = "HTTP"
+  port              = "443"
+  protocol          = "HTTPS"
+  certificate_arn   = aws_acm_certificate.api.arn
 
   default_action {
     type             = "forward"
@@ -28,43 +29,33 @@ resource "aws_lb_listener" "portchain_forward" {
   }
 }
 
-# TLS Ingress
-resource "aws_cloudfront_distribution" "edge" {
-  enabled = true
+data "aws_route53_zone" "zone" {
+  name = "mindmymoney.co.uk"
+}
 
-  default_cache_behavior {
-    allowed_methods        = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-    cached_methods         = ["GET", "HEAD"]
-    viewer_protocol_policy = "redirect-to-https"
-    target_origin_id       = "portchain"
+resource "aws_route53_record" "record" {
+  zone_id = data.aws_route53_zone.zone.id
+  name    = "api.mindmymoney.co.uk"
+  ttl     = "360"
+  type    = "CNAME"
+  records = [aws_lb.ecs_lb.dns_name]
+}
 
-    forwarded_values {
-      query_string = true
-      cookies {
-        forward = "all"
-      }
-    }
-  }
+resource "aws_acm_certificate" "api" {
+  domain_name       = aws_route53_record.record.fqdn
+  validation_method = "DNS"
+}
 
-  origin {
-    domain_name = aws_lb.ecs_lb.dns_name
-    origin_id   = "portchain"
+resource "aws_route53_record" "cert_validation" {
+  allow_overwrite = true
+  name            = tolist(aws_acm_certificate.api.domain_validation_options)[0].resource_record_name
+  records         = [tolist(aws_acm_certificate.api.domain_validation_options)[0].resource_record_value]
+  type            = tolist(aws_acm_certificate.api.domain_validation_options)[0].resource_record_type
+  zone_id         = data.aws_route53_zone.zone.id
+  ttl             = 60
+}
 
-    custom_origin_config {
-      http_port              = 80
-      https_port             = 443
-      origin_protocol_policy = "http-only"
-      origin_ssl_protocols   = ["TLSv1"]
-    }
-  }
-
-  restrictions {
-    geo_restriction {
-      restriction_type = "none"
-    }
-  }
-
-  viewer_certificate {
-    cloudfront_default_certificate = true
-  }
+resource "aws_acm_certificate_validation" "validation" {
+  certificate_arn         = aws_acm_certificate.api.arn
+  validation_record_fqdns = [aws_route53_record.cert_validation.fqdn]
 }
